@@ -1,4 +1,5 @@
 require "brew/npm/version"
+require "brew/npm/cli"
 
 module Brew
   module Npm
