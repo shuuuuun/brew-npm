@@ -7,13 +7,12 @@ Gem::Specification.new do |spec|
   spec.email         = ["shuuuuuny+github@gmail.com"]
 
   spec.summary       = %q{Generate Homebrew formulas to install standalone npms.}
-  # spec.description   = %q{TODO: Write a longer description or delete this line.}
+  spec.description   = %q{This gem can be installed with "brew install brew-npm" and used to install gems with "brew npm install <npm>".}
   spec.homepage      = "https://github.com/shuuuuun/brew-npm"
   spec.license       = "MIT"
   spec.required_ruby_version = Gem::Requirement.new(">= 2.3.0")
 
-  # spec.metadata["allowed_push_host"] = "TODO: Set to 'http://mygemserver.com'"
-
+  spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/shuuuuun/brew-npm"
   # spec.metadata["changelog_uri"] = "TODO: Put your gem's CHANGELOG.md URL here."
@@ -26,6 +25,4 @@ Gem::Specification.new do |spec|
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
-
-  spec.add_dependency "node"
 end
