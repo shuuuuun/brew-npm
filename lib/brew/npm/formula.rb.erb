@@ -1,0 +1,147 @@
+# -*- ruby -*-
+
+require 'formula'
+require 'fileutils'
+
+USE_HOMEBREW_NODE = <%= use_homebrew_node ? "true" : "false" %>
+
+module NodeBin
+  def node_bin
+    USE_HOMEBREW_NODE ? Formula["node"].opt_bin : "/usr/bin"
+  end
+
+  def npm_bin
+    # Formula["npm"].opt_bin
+    # node が入っていればnpmも入ってる
+    HOMEBREW_PREFIX/"bin/npm"
+  end
+end
+
+class NPMDownloadStrategy < AbstractDownloadStrategy
+  include NodeBin
+
+  def fetch
+    ohai "Fetching <%= name %> from npm source"
+    # pp node_bin
+    # pp npm_bin
+    # pp File.exist?(npm_bin)
+    # pp `#{npm_bin} version`
+    # pp Formula["npm"].inspect
+    # Formula["npm"] と Formula["node"] は同じ
+    # binding.irb
+    # TODO: npmコマンドにPATHが通ってない. どのnpmを使うか. どうやってパスを取得するか.
+    # exit 1
+    cache.cd do
+      pp `pwd`
+      # ENV['GEM_SPEC_CACHE'] = "#{cache}/gem_spec_cache"
+      # ENV['NPM_SPEC_CACHE'] = "#{cache}/npm_spec_cache"
+      ENV['NPM_CONFIG_CACHE'] = "#{cache}/npm_cache"
+      system "#{npm_bin}", "pack", "<%= name %>@#{npm_version}"
+    end
+  end
+
+  def cached_location
+    Pathname.new("#{cache}/<%= name %>-#{npm_version}.tgz")
+  end
+
+  def cache
+    @cache ||= HOMEBREW_CACHE
+  end
+
+  def npm_version
+    return @version if defined?(@version) && @version
+    @version = @resource.version if defined?(@resource)
+    raise "Unable to determine version; did Homebrew change?" unless @version
+    @version
+  end
+
+  def clear_cache
+    cached_location.unlink if cached_location.exist?
+  end
+end
+
+class <%= klass %> < Formula
+  include NodeBin
+
+  url "<%= name %>", :using => NPMDownloadStrategy
+  version "<%= version %>"
+  depends_on "node"
+  # depends_on "npm"
+
+  def install
+    # Copy user's NPM config to temporary build home.
+    # buildpath_npmrc = "#{ENV['HOME']}/.npmrc"
+    # if File.exists?('<%= user_npmrc %>') && !File.exists?(buildpath_npmrc)
+    #   FileUtils.cp('<%= user_npmrc %>', buildpath_npmrc)
+    # end
+
+    # set GEM_HOME and GEM_PATH to make sure we package all the dependent gems
+    # together without accidently picking up other gems on the gem path since
+    # they might not be there if, say, we change to a different rvm gemset
+    # ENV['GEM_HOME'] = "#{prefix}"
+    # ENV['GEM_PATH'] = "#{prefix}"
+
+    # Use /usr/local/bin at the front of the path instead of Homebrew shims,
+    # which mess with Ruby's own compiler config when building native extensions
+    if defined?(HOMEBREW_SHIMS_PATH)
+      ENV['PATH'] = ENV['PATH'].sub(HOMEBREW_SHIMS_PATH.to_s, '/usr/local/bin')
+    end
+
+    pp `#{npm_bin} version`
+    # binding.irb
+    # return
+
+    FileUtils.cd(prefix)
+
+    system "#{npm_bin}", "install", cached_download
+    # system "#{npm_bin}", "install", cached_download,
+    #          "--no-document",
+    #          "--no-wrapper",
+    #          "--no-user-install",
+    #          "--install-dir", prefix,
+    #          "--bindir", bin
+
+    raise "npm install '<%= name %>' failed with status #{$?.exitstatus}" unless $?.success?
+
+    bin.rmtree if bin.exist?
+    bin.mkpath
+
+    original_name = '<%= name %>'
+    pp "prefix: #{prefix}"
+    pp "name: #{name}"
+    pp "original_name: #{original_name}"
+    pp "bin: #{bin}"
+    # binding.irb
+    FileUtils.symlink(Dir.glob("#{prefix}/node_modules/#{original_name}/bin/*"), bin)
+
+    # brew_gem_prefix = prefix + "gems/<%= name %>-#{version}"
+
+    # completion_for_bash = Dir[
+    #                         "#{brew_gem_prefix}/completion{s,}/<%= name %>.{bash,sh}",
+    #                         "#{brew_gem_prefix}/**/<%= name %>{_,-}completion{s,}.{bash,sh}"
+    #                       ].first
+    # bash_completion.install completion_for_bash if completion_for_bash
+
+    # completion_for_zsh = Dir[
+    #                        "#{brew_gem_prefix}/completions/<%= name %>.zsh",
+    #                        "#{brew_gem_prefix}/**/<%= name %>{_,-}completion{s,}.zsh"
+    #                      ].first
+    # zsh_completion.install completion_for_zsh if completion_for_zsh
+
+#     gemspec = Gem::Specification::load("#{prefix}/specifications/<%= name %>-#{version}.gemspec")
+#     ruby_libs = Dir.glob("#{prefix}/gems/*/lib")
+#     gemspec.executables.each do |exe|
+#       file = Pathname.new("#{brew_gem_prefix}/#{gemspec.bindir}/#{exe}")
+#       (bin+file.basename).open('w') do |f|
+#         f << <<-RUBY
+# #!#{node_bin}/ruby --disable-gems
+# ENV['GEM_HOME']="#{prefix}"
+# ENV['GEM_PATH']="#{prefix}"
+# require 'rubygems'
+# $:.unshift(#{ruby_libs.map(&:inspect).join(",")})
+# load "#{file}"
+#         RUBY
+#       end
+#     end
+  end
+end
