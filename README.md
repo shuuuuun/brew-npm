@@ -19,27 +19,27 @@ Via Homebrew:
 
 ## Usage
 
-    brew npm install koko
+    brew npm install ${NPM_PACKAGE_NAME}
 
 To install a specific version:
 
-    brew npm install koko 0.6.0
+    brew npm install ${NPM_PACKAGE_NAME} ${VERSION}
 
 To upgrade:
 
-    brew npm upgrade koko
+    brew npm upgrade ${NPM_PACKAGE_NAME}
 
 To uninstall:
 
-    brew npm uninstall koko
+    brew npm uninstall ${NPM_PACKAGE_NAME}
 
 To check information:
 
-    brew npm info koko
+    brew npm info ${NPM_PACKAGE_NAME}
 
 Note:
 
-Installed packages are listed in `brew list` with prefix of `npm-`, like `npm-koko`.
+Installed packages are listed in `brew list` with prefix of `npm-`.
 
 
 ## Philosophy
