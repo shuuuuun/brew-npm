@@ -17,16 +17,9 @@ module Brew::Npm::CLI
     "help"      => "This message"
   }
 
-  HOMEBREW_NODE_FLAG = "--homebrew-node"
-  SYSTEM_NODE_FLAG   = "--system-node"
-  NODE_FLAGS = [HOMEBREW_NODE_FLAG, SYSTEM_NODE_FLAG]
-
   class Arguments
-    attr_reader :node_flag
-
     def initialize(args)
-      @node_flag          = args.select {|a| NODE_FLAGS.include?(a) }.last
-      @args               = args.reject {|a| NODE_FLAGS.include?(a) }
+      @args               = args
       @args_without_flags = @args.reject {|a| a.start_with?("-") }
     end
 
@@ -89,7 +82,7 @@ module Brew::Npm::CLI
     ENV["HOMEBREW_PREFIX"] || `brew --prefix`.chomp
   end
 
-  def expand_formula(name, version, use_homebrew_node=false)
+  def expand_formula(name, version)
     klass           = "Npm" + name.capitalize.gsub(/[-_.\s]([a-zA-Z0-9])/) { $1.upcase }.gsub('+', 'x')
     user_npmrc      = "#{ENV['HOME']}/.npmrc"
     template_file   = File.expand_path("../formula.rb.erb", __FILE__)
@@ -97,11 +90,11 @@ module Brew::Npm::CLI
     template.result(binding) # TODO: avoid binding. specify variables.
   end
 
-  def with_temp_formula(name, version, use_homebrew_node)
+  def with_temp_formula(name, version)
     filename = File.join Dir.tmpdir, "npm-#{name}.rb"
 
     open(filename, "w") do |f|
-      f.puts expand_formula(name, version, use_homebrew_node)
+      f.puts expand_formula(name, version)
     end
 
     yield filename
@@ -109,19 +102,11 @@ module Brew::Npm::CLI
     File.unlink filename
   end
 
-  def homebrew_node?(node_flag)
-    File.exist?("#{homebrew_prefix}/opt/node") &&
-      node_flag.nil? || node_flag == HOMEBREW_NODE_FLAG
-  end
-
   def run(args = ARGV)
     arguments = process_args(args)
     name      = arguments.npm
     version   = fetch_version(name, arguments.supplied_version)
-    # check node/npm is installed
-    # pp arguments, name, version
-    # return
-    with_temp_formula(name, version, homebrew_node?(arguments.node_flag)) do |filename|
+    with_temp_formula(name, version) do |filename|
       case arguments.command
       when "formula"
         $stdout.puts File.read(filename)
