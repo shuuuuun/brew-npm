@@ -41,7 +41,7 @@ module Brew::Npm::CLI
   end
 
   def help_msg
-    (["Please specify a npm name (e.g. brew npm command <name>)"] +
+    (["Please specify a npm package name (e.g. brew npm command <name>)"] +
       COMMANDS.map {|name, desc| "  #{name} - #{desc}"}).join("\n")
   end
 
@@ -105,6 +105,11 @@ module Brew::Npm::CLI
   def run(args = ARGV)
     arguments = process_args(args)
     name      = arguments.npm
+    if name.nil?
+      STDERR.puts 'Package name is missing!'
+      STDERR.puts help_msg
+      exit 0
+    end
     version   = fetch_version(name, arguments.supplied_version)
     with_temp_formula(name, version) do |filename|
       case arguments.command
