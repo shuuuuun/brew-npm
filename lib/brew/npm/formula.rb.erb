@@ -62,7 +62,6 @@ class <%= klass %> < Formula
     bin.rmtree if bin.exist?
     bin.mkpath
 
-    original_name = '<%= name %>'
-    FileUtils.symlink(Dir.glob("#{prefix}/node_modules/#{original_name}/bin/*"), bin)
+    FileUtils.symlink(Dir.glob("#{prefix}/node_modules/<%= name %>/bin/*"), bin)
   end
 end
