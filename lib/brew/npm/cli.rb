@@ -11,6 +11,7 @@ module Brew::Npm::CLI
                     "            (e.g. brew npm install <name> [version])"),
     "upgrade"   => "Upgrade to the latest version of a brew npm",
     "uninstall" => "Uninstall a brew npm",
+    "reinstall" => "Reinstall a brew npm",
     "info"      => "Show information for an installed npm",
     "formula"   => "Print out the generated formula for a npm",
     "version"   => "Show version of brew-npm",
