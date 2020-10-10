@@ -2,6 +2,7 @@
 
 require 'formula'
 require 'fileutils'
+require 'json'
 
 module NodeBin
   def npm_bin
@@ -62,6 +63,14 @@ class <%= klass %> < Formula
     bin.rmtree if bin.exist?
     bin.mkpath
 
-    FileUtils.symlink(Dir.glob("#{prefix}/node_modules/<%= name %>/bin/*"), bin)
+    package_path = "#{prefix}/node_modules/<%= name %>"
+    package_json = JSON.parse(File.read(File.join(package_path, 'package.json'))) rescue nil
+    if package_json && package_json['bin']
+      package_json['bin'].each do |name, relative_path|
+        FileUtils.symlink(File.join(package_path, relative_path), File.join(bin, name))
+      end
+    else
+      FileUtils.symlink(Dir.glob("#{package_path}/bin/*"), bin)
+    end
   end
 end
