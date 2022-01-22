@@ -84,7 +84,8 @@ module Brew::Npm::CLI
   end
 
   def expand_formula(name, version)
-    klass           = "Npm" + name.capitalize.gsub(/[-_.\s]([a-zA-Z0-9])/) { $1.upcase }.gsub('+', 'x')
+    klass           = "Npm" + name.capitalize.gsub(/[-_.\s@\/]([a-zA-Z0-9])/) { $1.upcase }.gsub('+', 'x')
+    sanitized_name  = sanitize_name(name)
     user_npmrc      = "#{ENV['HOME']}/.npmrc"
     template_file   = File.expand_path("../formula.rb.erb", __FILE__)
     template        = ERB.new(File.read(template_file))
@@ -92,7 +93,8 @@ module Brew::Npm::CLI
   end
 
   def with_temp_formula(name, version)
-    filename = File.join Dir.tmpdir, "npm-#{name}.rb"
+    sanitized_name = sanitize_name(name)
+    filename = File.join Dir.tmpdir, "npm-#{sanitized_name}.rb"
 
     open(filename, "w") do |f|
       f.puts expand_formula(name, version)
@@ -121,5 +123,9 @@ module Brew::Npm::CLI
         exit $?.exitstatus unless $?.success?
       end
     end
+  end
+
+  def sanitize_name(name)
+    name.gsub(%r{\A@}, '').gsub('/', '-') # for Scoped packages. https://docs.npmjs.com/cli/v8/using-npm/scope
   end
 end

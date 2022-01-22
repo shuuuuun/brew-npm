@@ -22,7 +22,7 @@ class NPMDownloadStrategy < AbstractDownloadStrategy
   end
 
   def cached_location
-    Pathname.new("#{cache}/<%= name %>-#{npm_version}.tgz")
+    Pathname.new("#{cache}/<%= sanitized_name %>-#{npm_version}.tgz")
   end
 
   def cache
