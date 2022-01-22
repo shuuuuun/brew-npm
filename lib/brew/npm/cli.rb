@@ -117,7 +117,7 @@ module Brew::Npm::CLI
       when "formula"
         $stdout.puts File.read(filename)
       else
-        system "brew #{arguments.to_args.shelljoin} #{filename}"
+        system "brew #{arguments.to_args.shelljoin} --formula #{filename}"
         exit $?.exitstatus unless $?.success?
       end
     end
