@@ -7,14 +7,13 @@ This project was forked from [sportngin/brew-gem](https://github.com/sportngin/b
 
 ## Installation
 
-<!-- Via Rubygems:
-
-    gem install brew-npm
-    brew-npm install brew-npm -->
-
 Via Homebrew:
 
     brew install shuuuuun/tap/brew-npm
+
+Via Rubygems:
+
+    gem install brew-npm
 
 
 ## Usage
