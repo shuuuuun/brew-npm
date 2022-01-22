@@ -66,14 +66,9 @@ class <%= klass %> < Formula
     package_path = "#{prefix}/node_modules/<%= name %>"
     package_json = JSON.parse(File.read(File.join(package_path, 'package.json'))) rescue nil
     if package_json && package_json['bin']
-      if package_json['bin'].is_a? String
-        name = package_json['name']
-        relative_path = package_json['bin']
+      bin_paths = package_json['bin'].is_a?(Hash) ? package_json['bin'] : { package_json['name'] => package_json['bin'] }
+      bin_paths.each do |name, relative_path|
         FileUtils.symlink(File.join(package_path, relative_path), File.join(bin, name))
-      else
-        package_json['bin'].each do |name, relative_path|
-          FileUtils.symlink(File.join(package_path, relative_path), File.join(bin, name))
-        end
       end
     else
       FileUtils.symlink(Dir.glob("#{package_path}/bin/*"), bin)
